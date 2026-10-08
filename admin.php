@@ -3,7 +3,7 @@ session_start();
 
 // Kiểm tra Session hoặc Cookie auth_token
 if (!isset($_SESSION['username']) && !isset($_COOKIE['auth_token'])) {
-    header('Location: login.php');
+    header('Location: index.php');
     exit();
 }
 

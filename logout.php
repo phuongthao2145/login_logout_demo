@@ -20,6 +20,6 @@ if (isset($_COOKIE['auth_token'])) {
 }
 
 // Chuyển hướng về trang đăng nhập
-header('Location: login.php');
+header('Location: index.php');
 exit();
 ?>
