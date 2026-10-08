@@ -29,7 +29,7 @@ $aiModels = [
 <head>
     <meta charset="UTF-8">
     <title>Trang Quản trị AI</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>

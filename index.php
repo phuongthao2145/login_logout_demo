@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $remember = isset($_POST['remember']);
 
-    $user = AI_User::authenticate($username, $password);
+    $user = AI_User::authenticate($username, password_hash($password, PASSWORD_DEFAULT));
 
     if ($user) {
         // 1. Lưu username vào $_SESSION
@@ -25,7 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($remember) {
             $token = bin2hex(random_bytes(16));
             // Lưu token vào Cookie (7 ngày = 7 * 24 * 3600 giây)
-            setcookie('auth_token', $token, time() + (7 * 86400), "/", "", false, true);
+            setcookie('auth_token', $token, [
+                'expires'  => $expire_time,
+                'path'     => '/',
+                'domain'   => '',       // Tự động nhận domain hiện tại
+                'secure'   => true,     // Chỉ gửi qua HTTPS
+                'httponly' => true,     // Bật cờ HttpOnly (chống XSS)
+                'samesite' => 'Lax'     // Chống CSRF
+            ]);
         }
         header('Location: admin.php');
         exit();
@@ -42,139 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Các khối hình cầu trang trí nền */
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ffffff, #a1c4fd);
-        }
-
-        .shape-1 {
-            width: 250px;
-            height: 250px;
-            top: 10%;
-            left: 20%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-
-        .shape-2 {
-            width: 300px;
-            height: 300px;
-            bottom: 10%;
-            right: 20%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Thẻ Form với hiệu ứng Glassmorphism */
-        .login-card {
-            position: relative;
-            z-index: 10;
-            width: 380px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .login-card h2 {
-            font-size: 24px;
-            color: #333;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px 20px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            background: rgba(255, 255, 255, 0.7);
-            outline: none;
-            font-size: 14px;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 25px;
-        }
-
-        .actions label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        .actions a {
-            color: #555;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .actions a:hover {
-            color: #000;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.85);
-            color: #333;
-            font-weight: bold;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .btn-submit:hover {
-            background: #ffffff;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
-        }
-    </style>
+    <link rel="stylesheet" href="main.css">
 </head>
+
 <body>
 
     <!-- Hình cầu làm nền -->
